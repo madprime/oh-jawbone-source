@@ -21,8 +21,8 @@ import arrow
 # Set up logging.
 logger = logging.getLogger(__name__)
 
-MOVES_API_BASE = 'https://api.moves-app.com/api/1.1'
-MOVES_API_STORY = MOVES_API_BASE + '/user/storyline/daily'
+JAWBONE_API_BASE = 'https://jawbone.com'
+JAWBONE_API_MOVES = JAWBONE_API_BASE + '/nudge/api/v.1.1/users/@me/moves'
 
 
 @shared_task
@@ -35,15 +35,19 @@ def process_jawbone(oh_id):
     oh_access_token = oh_member.get_access_token(
                             client_id=settings.OPENHUMANS_CLIENT_ID,
                             client_secret=settings.OPENHUMANS_CLIENT_SECRET)
-    jawbones_data = get_existing_jawbone(oh_access_token)
+    jawbone_data = get_existing_jawbone(oh_access_token)
     jawbone_member = oh_member.datasourcemember
     jawbone_access_token = jawbone_member.get_access_token(
-                            client_id=settings.MOVES_CLIENT_ID,
-                            client_secret=settings.MOVES_CLIENT_SECRET)
-    update_moves(oh_member, moves_access_token, moves_data)
+                            client_id=settings.JAWBONE_CLIENT_ID,
+                            client_secret=settings.JAWBONE_CLIENT_SECRET)
+    update_jawbone(oh_member, jawbone_access_token, jawbone_data)
 
 
-def update_moves(oh_member, moves_access_token, moves_data):
+def update_jawbone(oh_member, jawbone_access_token, jawbone_data):
+    jawbone_moves_data = get_jawbone_moves(jawbone_access_token)
+    add_jawbone_moves(oh_member=oh_member, data=jawbone_moves_data)
+
+    """
     try:
         start_date = get_start_date(moves_data, moves_access_token)
         start_date = datetime.strptime(start_date, "%Y%m%d")
@@ -77,31 +81,33 @@ def update_moves(oh_member, moves_access_token, moves_data):
         process_moves.apply_async(args=[oh_member.oh_id], countdown=61)
     finally:
         replace_moves(oh_member, moves_data)
+    """
 
 
-def replace_moves(oh_member, moves_data):
+def add_jawbone_moves(oh_member, data):
     # delete old file and upload new to open humans
     tmp_directory = tempfile.mkdtemp()
     metadata = {
         'description':
-        'Moves GPS maps, locations, and steps data.',
-        'tags': ['GPS', 'Moves', 'steps'],
+        'Jawbone "moves" data, including steps, calories, and activity.',
+        'tags': ['Jawbone', 'steps'],
         'updated_at': str(datetime.utcnow()),
         }
-    out_file = os.path.join(tmp_directory, 'moves-storyline-data.json')
+    out_file = os.path.join(tmp_directory, 'jawbone-moves-data.json')
     logger.debug('deleted old file for {}'.format(oh_member.oh_id))
     api.delete_file(oh_member.access_token,
                     oh_member.oh_id,
-                    file_basename="moves-storyline-data.json")
+                    file_basename='jawbone-moves-data.json')
     with open(out_file, 'w') as json_file:
-        json.dump(moves_data, json_file)
+        json.dump(data, json_file)
         json_file.flush()
     api.upload_aws(out_file, metadata,
                    oh_member.access_token,
                    project_member_id=oh_member.oh_id)
-    logger.debug('uploaded new file for {}'.format(oh_member.oh_id))
+    logger.debug('added new jawbone moves file for {}'.format(oh_member.oh_id))
 
 
+"""
 def remove_partial_data(moves_data, start_date):
     remove_indexes = []
     for i, element in enumerate(moves_data):
@@ -123,16 +129,35 @@ def get_start_date(moves_data, moves_access_token):
         return response.json()['profile']['firstDate']
     else:
         return moves_data[-1]['date']
+"""
 
 
-def get_existing_moves(oh_access_token):
+def get_existing_jawbone(oh_access_token):
     member = api.exchange_oauth2_member(oh_access_token)
     for dfile in member['data']:
-        if 'Moves' in dfile['metadata']['tags']:
+        if 'Jawbone' in dfile['metadata']['tags']:
             # get file here and read the json into memory
             tf_in = tempfile.NamedTemporaryFile(suffix='.json')
             tf_in.write(requests.get(dfile['download_url']).content)
             tf_in.flush()
-            moves_data = json.load(open(tf_in.name))
-            return moves_data
+            jawbone_data = json.load(open(tf_in.name))
+            return jawbone_data
     return []
+
+
+def get_jawbone_data(access_token, url):
+    req = requests.get(url, headers={
+        'Authorization': 'Bearer {}'.format(access_token)})
+    return req.json()
+
+
+def get_jawbone_moves(access_token):
+    apidata = get_jawbone_data(access_token=access_token,
+                               url=JAWBONE_API_MOVES)
+    agg_data = apidata['data']['items']
+    while 'links' in apidata['data'] and 'next' in apidata['data']['links']:
+        nexturl = JAWBONE_API_BASE + apidata['data']['links']['next']
+        apidata = get_jawbone_data(access_token=access_token, url=nexturl)
+        agg_data = agg_data + apidata['data']['items']
+
+    return agg_data

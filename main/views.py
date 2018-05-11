@@ -78,7 +78,7 @@ def dashboard(request):
                 logout(request)
                 return redirect("/")
             connect_url = ''
-            allow_update = check_update(jawbone_member)
+            allow_update = True  # check_update(jawbone_member)
         else:
             allow_update = False
             jawbone_member = ''
@@ -98,41 +98,41 @@ def dashboard(request):
         }
         return render(request, 'main/dashboard.html',
                       context=context)
-    return redirect("/")
+    return redirect('/')
 
 
 def remove_jawbone(request):
-    if request.method == "POST" and request.user.is_authenticated:
+    if request.method == 'POST' and request.user.is_authenticated:
         try:
             oh_member = request.user.oh_member
             api.delete_file(oh_member.access_token,
                             oh_member.oh_id,
-                            file_basename="moves-storyline-data.json")
-            messages.info(request, "Your Jawbone account has been removed")
+                            file_basename='jawbone-moves-data.json')
+            messages.info(request, 'Your Jawbone account has been removed')
             jawbone_account = request.user.oh_member.datasourcemember
             jawbone_account.delete()
         except:
             jawbone_account = request.user.oh_member.datasourcemember
             jawbone_account.delete()
-            messages.info(request, ("Something went wrong, please"
-                          "re-authorize us on Open Humans"))
+            messages.info(request, ('Something went wrong, please '
+                                    're-authorize us on Open Humans'))
             logout(request)
             return redirect('/')
     return redirect('/dashboard')
 
 
 def update_data(request):
-    if request.method == "POST" and request.user.is_authenticated:
+    if request.method == 'POST' and request.user.is_authenticated:
         oh_member = request.user.oh_member
-        # process_jawbone.delay(oh_member.oh_id)
+        process_jawbone.delay(oh_member.oh_id)
         jawbone_member = oh_member.datasourcemember
         jawbone_member.last_submitted = arrow.now().format()
         jawbone_member.save()
         messages.info(request,
-                      ("An update of your Jawbone data has been started! "
-                       "It can take some minutes before the first data is "
-                       "available. Reload this page in a while to find your "
-                       "data"))
+                      ('An update of your Jawbone data has been started! '
+                       'It can take some minutes before the first data is '
+                       'available. Reload this page in a while to find your '
+                       'data'))
         return redirect('/dashboard')
 
 
