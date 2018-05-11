@@ -28,16 +28,16 @@ MOVES_API_STORY = MOVES_API_BASE + '/user/storyline/daily'
 @shared_task
 def process_jawbone(oh_id):
     """
-    Update the moves file for a given OH user
+    Update the Jawbone file for a given OH user
     """
     logger.debug('Starting Jawbone processing for {}'.format(oh_id))
     oh_member = OpenHumansMember.objects.get(oh_id=oh_id)
     oh_access_token = oh_member.get_access_token(
                             client_id=settings.OPENHUMANS_CLIENT_ID,
                             client_secret=settings.OPENHUMANS_CLIENT_SECRET)
-    moves_data = get_existing_moves(oh_access_token)
-    moves_member = oh_member.datasourcemember
-    moves_access_token = moves_member.get_access_token(
+    jawbones_data = get_existing_jawbone(oh_access_token)
+    jawbone_member = oh_member.datasourcemember
+    jawbone_access_token = jawbone_member.get_access_token(
                             client_id=settings.MOVES_CLIENT_ID,
                             client_secret=settings.MOVES_CLIENT_SECRET)
     update_moves(oh_member, moves_access_token, moves_data)

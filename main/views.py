@@ -14,6 +14,8 @@ import arrow
 # Set up logging.
 logger = logging.getLogger(__name__)
 
+SCOPES = 'move_read sleep_read heartrate_read'
+
 
 def index(request):
     """
@@ -50,8 +52,9 @@ def complete(request):
                    'oh_proj_page': settings.OH_ACTIVITY_PAGE}
         if not hasattr(oh_member, 'datasourcemember'):
             jawbone_url = ('https://jawbone.com/auth/oauth2/auth?'
-                           'response_type=code&scope=move_read&'
+                           'response_type=code&scope={}&'
                            'redirect_uri={}&client_id={}').format(
+                            SCOPES,
                             settings.JAWBONE_REDIRECT_URI,
                             settings.JAWBONE_CLIENT_ID)
             logger.debug(jawbone_url)
@@ -79,8 +82,9 @@ def dashboard(request):
             jawbone_member = ''
             download_file = ''
             connect_url = ('https://jawbone.com/auth/oauth2/auth?'
-                           'response_type=code&scope=move_read&'
+                           'response_type=code&scope={}&'
                            'redirect_uri={}&client_id={}').format(
+                            SCOPES,
                             settings.JAWBONE_REDIRECT_URI,
                             settings.JAWBONE_CLIENT_ID)
         context = {
