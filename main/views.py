@@ -25,6 +25,8 @@ def index(request):
         return redirect('/dashboard')
     else:
         context = {'client_id': settings.OPENHUMANS_CLIENT_ID,
+                   'oh_redirect_uri': '{}/complete'.format(
+                      settings.OPENHUMANS_APP_BASE_URL),
                    'oh_proj_page': settings.OH_ACTIVITY_PAGE}
 
         return render(request, 'main/index.html', context=context)
