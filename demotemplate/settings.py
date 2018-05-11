@@ -52,9 +52,9 @@ OH_DIRECT_UPLOAD = OH_API_BASE + '/project/files/upload/direct/'
 OH_DIRECT_UPLOAD_COMPLETE = OH_API_BASE + '/project/files/upload/complete/'
 OH_DELETE_FILES = OH_API_BASE + '/project/files/delete/'
 
-MOVES_CLIENT_ID = os.getenv('MOVES_CLIENT_ID')
-MOVES_CLIENT_SECRET = os.getenv('MOVES_CLIENT_SECRET')
-MOVES_REDIRECT_URI = os.getenv('MOVES_REDIRECT_URI')
+JAWBONE_CLIENT_ID = os.getenv('JAWBONE_CLIENT_ID')
+JAWBONE_CLIENT_SECRET = os.getenv('JAWBONE_CLIENT_SECRET')
+JAWBONE_REDIRECT_URI = os.getenv('JAWBONE_REDIRECT_URI')
 
 # Requests Respectful (rate limiting, waiting)
 if REMOTE is True:
@@ -71,7 +71,7 @@ if REMOTE is True:
 
 # This creates a Realm called "source" that allows 60 requests per minute maximum.
 rr = RespectfulRequester()
-rr.register_realm("moves", max_requests=60, timespan=60)
+rr.register_realm("jawbone", max_requests=60, timespan=60)
 
 # Applications installed
 INSTALLED_APPS = [

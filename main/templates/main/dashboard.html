@@ -3,17 +3,17 @@
 {% block content %}
 
   <div class="container">
-    <h1>Welcome back to the <i>Moves</i> integration for <i>Open Humans</i></h1>
+    <h1>Welcome back to the <i>Jawbone</i> integration for <i>Open Humans</i></h1>
     <p class="lead">
       You can perform basic management tasks from this page.
     </p>
-    {% if moves_member%}
+    {% if jawbone_member%}
     <div class="row">
       <div class="col-md-6">
         <p>
-        A <i>Moves</i> account is connected to your <i>Open Humans</i>
+        A <i>Jawbone</i> account is connected to your <i>Open Humans</i>
         right now. You can trigger an
-        update your <i>Moves</i> data (automatic data updates are done every few days,
+        update your <i>Jawbone</i> data (automatic data updates are done every few days,
         but you might want to have your latest data right now).
         </p>
         {% if allow_update%}
@@ -31,16 +31,16 @@
           >
           You recently requested data. Please wait 1 hour.
         </a><br/>
-        <p>Getting the latest data from Moves takes a while and impacts other users too,
+        <p>Getting the latest data from Jawbone takes a while and impacts other users too,
           thus we limit the frequency with which you can request updates.</p>
         {%endif%}
         <br/>
-        <p>You want do remove your current Moves account and maybe replace with
-          with a different one? Click below to remove your current Moves account</p>
-        <form action="{% url 'remove_moves' %}" method="post">
+        <p>You want do remove your current Jawbone account and maybe replace with
+          with a different one? Click below to remove your current Jawbone account</p>
+        <form action="{% url 'remove_jawbone' %}" method="post">
           {% csrf_token %}
           <input type="submit"
-            value="Disconnect Moves"
+            value="Disconnect Jawbone"
             style="margin-top:6px;"
             class="btn btn-danger">
         </form>
@@ -48,14 +48,14 @@
       </div>
       <div class="col-md-6">
         <p>
-          You can download a copy of your <i>Moves</i> data from here.
+          You can download a copy of your <i>Jawbone</i> data from here.
         </p>
         {% if download_file %}
         <a
           class="btn btn-success"
           href="{{download_file}}"
           >
-          Download <i>Moves</i> Data
+          Download <i>Jawbone</i> Data
         </a>
         {%else%}
         <a
@@ -64,20 +64,20 @@
           >
           No data available yet.
         </a>
-        <p>If you have recently connected your Moves account it can take a bit
+        <p>If you have recently connected your Jawbone account it can take a bit
           until we have gathered your data. Please come back later.</p>
         {%endif%}
       </div>
     </div>
       {% else %}
       <p class="lead">
-        You haven't connected to <i>Moves</i> yet. click below to get started.
+        You haven't connected to <i>Jawbone</i> yet. click below to get started.
       </p>
       <a
         class="btn btn-primary btn-lg"
         href="{{connect_url}}"
         >
-        Connect your <i>Moves</i> account
+        Connect your <i>Jawbone</i> account
       </a>
       {%endif%}
   </div>

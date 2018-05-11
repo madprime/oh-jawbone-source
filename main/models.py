@@ -18,10 +18,10 @@ class DataSourceMember(models.Model):
     """
     user = models.OneToOneField(OpenHumansMember, on_delete=models.CASCADE)
     # Your other fields should go below here
-    moves_id = models.CharField(max_length=65,
-                                primary_key=True,
-                                unique=True,
-                                default='')
+    jawbone_id = models.CharField(max_length=65,
+                                  primary_key=True,
+                                  unique=True,
+                                  default='')
     access_token = models.CharField(max_length=256, default="")
     refresh_token = models.CharField(max_length=256, default="")
     token_expires = models.DateTimeField(default=arrow.now().format())
@@ -35,8 +35,8 @@ class DataSourceMember(models.Model):
         return (arrow.now() + timedelta(seconds=expires_in)).format()
 
     def get_access_token(self,
-                         client_id=settings.MOVES_CLIENT_ID,
-                         client_secret=settings.MOVES_CLIENT_SECRET):
+                         client_id=settings.JAWBONE_CLIENT_ID,
+                         client_secret=settings.JAWBONE_CLIENT_SECRET):
         """
         Return access token. Refresh first if necessary.
         """
@@ -52,7 +52,7 @@ class DataSourceMember(models.Model):
         Refresh access token.
         """
         response = requests.post(
-            'https://api.moves-app.com/oauth/v1/access_token?',
+            'https://jawbone.com/auth/oauth2/token?',
             data={
                 'grant_type': 'refresh_token',
                 'refresh_token': self.refresh_token,
@@ -61,7 +61,6 @@ class DataSourceMember(models.Model):
             auth=requests.auth.HTTPBasicAuth(client_id, client_secret))
         if response.status_code == 200:
             data = response.json()
-            self.moves_id = data['user_id']
             self.access_token = data['access_token']
             self.refresh_token = data['refresh_token']
             self.token_expires = self.get_expiration(data['expires_in'])
