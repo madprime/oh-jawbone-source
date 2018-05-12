@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from open_humans.models import OpenHumansMember
 from .models import DataSourceMember
-from .helpers import get_jawbone_file, check_update
+from .helpers import get_jawbone_files, check_update
 from datauploader.tasks import process_jawbone
 from ohapi import api
 import arrow
@@ -73,8 +73,8 @@ def dashboard(request):
     if request.user.is_authenticated:
         if hasattr(request.user.oh_member, 'datasourcemember'):
             jawbone_member = request.user.oh_member.datasourcemember
-            download_file = get_jawbone_file(request.user.oh_member)
-            if download_file == 'error':
+            download_files = get_jawbone_files(request.user.oh_member)
+            if download_files == 'error':
                 logout(request)
                 return redirect("/")
             connect_url = ''
@@ -92,7 +92,7 @@ def dashboard(request):
         context = {
             'oh_member': request.user.oh_member,
             'jawbone_member': jawbone_member,
-            'download_file': download_file,
+            'download_files': download_files,
             'connect_url': connect_url,
             'allow_update': allow_update
         }
@@ -149,7 +149,7 @@ def jawbone_complete(request):
 
     if jawbone_member:
         messages.info(request, "Your Jawbone account has been connected")
-        # process_jawbone.delay(ohmember.oh_id)
+        process_jawbone.delay(ohmember.oh_id)
         return redirect('/dashboard')
 
     logger.debug('Invalid code exchange. User returned to starting page.')

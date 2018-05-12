@@ -50,13 +50,16 @@
         <p>
           You can download a copy of your <i>Jawbone</i> data from here.
         </p>
-        {% if download_file %}
-        <a
-          class="btn btn-success"
-          href="{{download_file}}"
-          >
-          Download <i>Jawbone</i> Data
-        </a>
+        {% if download_files %}
+        {% for download_file in download_files %}
+          <a
+            class="btn btn-success"
+            href="{{ download_file.url }}"
+            style="margin-bottom:5px"
+            >
+            Download <i>{{ download_file.name }}</i> Data
+          </a>
+        {% endfor %}
         {%else%}
         <a
           class="btn btn-default disabled"

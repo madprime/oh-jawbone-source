@@ -4,16 +4,18 @@ import arrow
 from datetime import timedelta
 
 
-def get_jawbone_file(oh_member):
+def get_jawbone_files(oh_member):
     try:
+        files = []
         oh_access_token = oh_member.get_access_token(
                                 client_id=settings.OPENHUMANS_CLIENT_ID,
                                 client_secret=settings.OPENHUMANS_CLIENT_SECRET)
         user_object = api.exchange_oauth2_member(oh_access_token)
         for dfile in user_object['data']:
             if 'Jawbone' in dfile['metadata']['tags']:
-                return dfile['download_url']
-        return ''
+                files.append({'url': dfile['download_url'],
+                              'name': dfile['basename']})
+        return files
 
     except:
         return 'error'
