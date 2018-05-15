@@ -26,6 +26,8 @@ JAWBONE_ENDPOINTS = {
     'sleeps': '/nudge/api/v.1.1/users/@me/sleeps',
 }
 
+DISALLOWED_DATA = ['place_lat', 'place_lon', 'place_acc', 'place_name']
+
 
 @shared_task
 def process_jawbone(oh_id):
@@ -44,12 +46,20 @@ def process_jawbone(oh_id):
     update_jawbone(oh_member, jawbone_access_token)
 
 
+def clean_data(data):
+    cleaned_data = []
+    for item in data:
+        cleaned_item = {x: item[x] for x in item if x not in DISALLOWED_DATA}
+        cleaned_data.append(cleaned_item)
+    return(cleaned_data)
+
+
 def update_jawbone(oh_member, jawbone_access_token):
     for endpoint in JAWBONE_ENDPOINTS.keys():
-        print("Trying {}".format(endpoint))
         data = get_aggregate_jawbone_data(
             access_token=jawbone_access_token,
             endpoint=endpoint)
+        data = clean_data(data)
         if data:
             add_jawbone_data(oh_member=oh_member, data=data, endpoint=endpoint)
 
