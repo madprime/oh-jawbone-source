@@ -35,12 +35,7 @@ class Command(BaseCommand):
                     'https://jawbone.com/nudge/api/v.1.1/users/@me',
                     headers=jawbone_headers)
                 user_data = req.json()
-                req2 = requests.get(
-                    'https://jawbone.com/nudge/api/v.1.1/users/@me/refreshToken',
-                    headers=jawbone_headers)
-                refresh_data = req2.json()
-                if req.status_code != 200 or req2.status_code != 200:
-                    print("Skipping {}! Token not working.".format(oh_id))
+                if 'xid' not in user_data['data']:
                     continue
                 oh_member = OpenHumansMember.create(
                                     oh_id=oh_id,
@@ -54,16 +49,11 @@ class Command(BaseCommand):
                 jawbone_member = DataSourceMember(
                     jawbone_id=user_data['data']['xid'],
                     access_token=jawbone_access_token,
-                    refresh_token=refresh_data['data']['refresh_token'],
+                    refresh_token='unknown',
                     token_expires=DataSourceMember.get_expiration(
-                        -3600)
+                        1000000000)
                 )
                 jawbone_member.user = oh_member
-                jawbone_member.save()
-                jawbone_member._refresh_tokens(
-                    client_id=settings.JAWBONE_CLIENT_ID,
-                    client_secret=settings.JAWBONE_CLIENT_SECRET
-                )
                 jawbone_member.save()
                 process_jawbone.delay(oh_member.oh_id)
                 # process_jawbone(oh_member.oh_id)
