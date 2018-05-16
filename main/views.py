@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from open_humans.models import OpenHumansMember
 from .models import DataSourceMember
-from .helpers import get_jawbone_files, check_update
+from .helpers import get_jawbone_files
 from datauploader.tasks import process_jawbone
 from ohapi import api
 import arrow
