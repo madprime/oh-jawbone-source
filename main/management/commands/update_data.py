@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from main.models import DataSourceMember
-from datauploader.tasks import process_moves
+from datauploader.tasks import process_jawbone
 import arrow
 from datetime import timedelta
 
@@ -10,9 +10,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         users = DataSourceMember.objects.all()
-        for moves_user in users:
-            if moves_user.last_submitted < (arrow.now() - timedelta(days=4)):
-                oh_id = moves_user.user.oh_id
-                process_moves.delay(oh_id)
+        for jawbone_user in users:
+            if jawbone_user.last_submitted < (arrow.now() - timedelta(days=4)):
+                oh_id = jawbone_user.user.oh_id
+                process_jawbone.delay(oh_id)
             else:
-                print("didn't update {}".format(moves_user.moves_id))
+                print("didn't update {}".format(jawbone_user.moves_id))
